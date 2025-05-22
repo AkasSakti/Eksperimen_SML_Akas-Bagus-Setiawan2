@@ -1,0 +1,22 @@
+CI/CD Workflow - Eksperimen SML
+
+1. Tool yang digunakan:
+   - GitHub Actions untuk menjalankan workflow otomatis saat ada perubahan pada repository.
+
+2. File konfigurasi CI:
+   - File workflow: .github/workflows/train_model.yml
+
+3. Fase-fase dalam workflow:
+   - Setup environment: install Python, dependencies dari requirements.txt
+   - Jalankan script preprocessing otomatis: automate_Akas.py
+   - Jalankan training model: modelling.py
+   - (Optional) Jalankan tuning lanjutan: modelling_tuning.py
+   - Simpan model sebagai artifact atau upload ke DagsHub (jika ada)
+
+4. Triggers:
+   - Workflow berjalan otomatis setiap kali ada push ke branch `main`.
+
+5. Tambahan:
+   - Artifak hasil training (model.pkl) disimpan di folder Eksperimen_SML_Akas-Bagus-Setiawan2/Membangun_model
+/Membangun_model/
+   - Status build ditampilkan di tab Actions GitHub
