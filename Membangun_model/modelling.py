@@ -7,7 +7,7 @@ import joblib
 import os
 
 # Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
-DATA_PATH = "D:/nang jember/Akas Bagus Setiawan/DICODING/Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/online_shoppers_intention_preprocessed.csv"
+DATA_PATH = "Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/online_shoppers_intention_preprocessed.csv"
 
 # Load Dataset
 df = pd.read_csv(DATA_PATH)
