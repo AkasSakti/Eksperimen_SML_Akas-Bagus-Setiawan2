@@ -3,12 +3,18 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
+import joblib
+import os
+
+# Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
+DATA_PATH = "D:/nang jember/Akas Bagus Setiawan/DICODING/Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/online_shoppers_intention_preprocessed.csv"
 
 # Load Dataset
-df = pd.read_csv("namadataset_preprocessing/online_shoppers_intention_preprocessed.csv")
+df = pd.read_csv(DATA_PATH)
 
 # Fitur dan target
 X = df.drop("Revenue", axis=1)
+print(X.columns.tolist())
 y = df["Revenue"]
 
 # Split data
@@ -21,3 +27,9 @@ model.fit(X_train, y_train)
 # Evaluasi
 y_pred = model.predict(X_test)
 print(classification_report(y_test, y_pred))
+
+# Simpan model ke file pkl
+MODEL_DIR = "Membangun_model"
+os.makedirs(MODEL_DIR, exist_ok=True)
+joblib.dump(model, os.path.join(MODEL_DIR, "model.pkl"))
+print(f"✅ Model disimpan sebagai {os.path.join(MODEL_DIR, 'model.pkl')}")
