@@ -1,0 +1,1 @@
+perlu ada file promotheus.exe di direktori Eksperimen_SML_Akas-Bagus-Setiawan2\Monitoring dan Logging, yang didownload dan diextract dari https://prometheus.io/download/
