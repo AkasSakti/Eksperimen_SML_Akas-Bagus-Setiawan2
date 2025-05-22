@@ -3,7 +3,7 @@ import joblib
 import pandas as pd
 
 # Path absolut ke model
-model_path = r'D:\nang jember\Akas Bagus Setiawan\DICODING\Eksperimen_SML_Akas-Bagus-Setiawan2\Membangun_model\Membangun_model\model.pkl'
+model_path = r'Eksperimen_SML_Akas-Bagus-Setiawan2\Membangun_model\Membangun_model\model.pkl'
 
 # Load model
 model = joblib.load(model_path)
