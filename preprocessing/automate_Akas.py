@@ -21,9 +21,9 @@ def load_and_preprocess(path):
     return df_scaled
 
 if __name__ == "__main__":
-    os.makedirs("D:/nang jember/Akas Bagus Setiawan/DICODING/Eksperimen_SML_Akas-Bagus-Setiawan/preprocessing/olshopdatapreprocesed/", exist_ok=True)
+    os.makedirs("Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/", exist_ok=True)
 
-    output_path = "D:/nang jember/Akas Bagus Setiawan/DICODING/Eksperimen_SML_Akas-Bagus-Setiawan/preprocessing/olshopdatapreprocesed/preprocessed.csv"
-    df_ready = load_and_preprocess("D:/nang jember/Akas Bagus Setiawan/DICODING/Eksperimen_SML_Akas-Bagus-Setiawan/preprocessing/online_shoppers_intention_preprocessed.csv")
+    output_path = "Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/preprocessed.csv"
+    df_ready = load_and_preprocess("Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/online_shoppers_intention_preprocessed.csv")
     df_ready.to_csv(output_path, index=False)
     print(f"[INFO] Preprocessed file saved to: {output_path}")
