@@ -7,7 +7,8 @@ from sklearn.metrics import classification_report
 import joblib
 import os
 import mlflow
-
+import dagshub
+from dagshub import dagshub
 
 # Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
 parser = argparse.ArgumentParser()
@@ -37,13 +38,18 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 joblib.dump(model, os.path.join(MODEL_DIR, "model.pkl"))
 print(f"✅ Model disimpan sebagai {os.path.join(MODEL_DIR, 'model.pkl')}")
 
-mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING"))
+# 1. Set tracking URI dulu
+mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
+
+# 2. Inisialisasi koneksi DagsHub (autentikasi & pengikatan MLflow)
+dagshub.init(repo_owner='AkasSakti', repo_name='Eksperimen_SML_Akas-Bagus-Setiawan2', mlflow=True)
+
+# 3. Set nama eksperimen
 mlflow.set_experiment("CI-Online-Shopper")
 
+# 4. Jalankan logging dalam run
 with mlflow.start_run():
     mlflow.log_param("model", "RandomForest")
     mlflow.log_metric("acc", 0.9)
     mlflow.log_artifact("Membangun_model/model.pkl")
-    mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2/mlflow")
-    mlflow.set_experiment(experiment_name="CI-Online-Shopper")
-  # boleh ganti sesuai nama eksperimenmu
+    mlflow.autolog()  # Opsional: bisa ditaruh sebelum atau dalam run
