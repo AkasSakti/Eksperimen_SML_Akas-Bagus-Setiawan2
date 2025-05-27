@@ -8,7 +8,6 @@ import joblib
 import os
 import mlflow
 import dagshub
-from dagshub import dagshub
 
 # Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
 parser = argparse.ArgumentParser()
