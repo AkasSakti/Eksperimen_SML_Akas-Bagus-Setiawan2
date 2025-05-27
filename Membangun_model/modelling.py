@@ -6,6 +6,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 import joblib
 import os
+import mlflow
+
 
 # Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
 parser = argparse.ArgumentParser()
@@ -34,3 +36,11 @@ MODEL_DIR = "Membangun_model"
 os.makedirs(MODEL_DIR, exist_ok=True)
 joblib.dump(model, os.path.join(MODEL_DIR, "model.pkl"))
 print(f"✅ Model disimpan sebagai {os.path.join(MODEL_DIR, 'model.pkl')}")
+
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING"))
+mlflow.set_experiment("CI-Online-Shopper")
+
+with mlflow.start_run():
+    mlflow.log_param("model", "RandomForest")
+    mlflow.log_metric("acc", 0.9)
+    mlflow.log_artifact("model.pkl")
