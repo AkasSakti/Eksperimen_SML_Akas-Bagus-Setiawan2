@@ -44,3 +44,5 @@ with mlflow.start_run():
     mlflow.log_param("model", "RandomForest")
     mlflow.log_metric("acc", 0.9)
     mlflow.log_artifact("Membangun_model/model.pkl")
+    mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2/mlflow")
+    mlflow.set_experiment("CI-Online-Shopper")  # boleh ganti sesuai nama eksperimenmu
