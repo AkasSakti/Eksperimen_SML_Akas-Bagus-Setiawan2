@@ -43,4 +43,4 @@ mlflow.set_experiment("CI-Online-Shopper")
 with mlflow.start_run():
     mlflow.log_param("model", "RandomForest")
     mlflow.log_metric("acc", 0.9)
-    mlflow.log_artifact("model.pkl")
+    mlflow.log_artifact("Membangun_model/model.pkl")
