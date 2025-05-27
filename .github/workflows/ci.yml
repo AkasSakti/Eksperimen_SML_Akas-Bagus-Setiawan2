@@ -31,4 +31,4 @@ jobs:
 
       - name: Run inference check
         run: |
-          python Monitoring\ dan\ Logging/7.Inference.py
+          python Monitoring\ dan\ Logging/7.Inference.py --model_path Membangun_model/model.pkl
