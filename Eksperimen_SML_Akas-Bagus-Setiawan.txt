@@ -1,1 +1,2 @@
-perlu ada file promotheus.exe di direktori Eksperimen_SML_Akas-Bagus-Setiawan2\Monitoring dan Logging, yang didownload dan diextract dari https://prometheus.io/download/
+1. Url GitHub Preprocessing: https://github.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2/tree/main/preprocessing
+2. perlu ada file promotheus.exe di direktori Eksperimen_SML_Akas-Bagus-Setiawan2\Monitoring dan Logging, yang didownload dan diextract dari https://prometheus.io/download/
