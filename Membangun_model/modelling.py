@@ -1,4 +1,5 @@
 # modelling.py
+import argparse
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -7,11 +8,11 @@ import joblib
 import os
 
 # Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
-DATA_PATH = "Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/online_shoppers_intention_preprocessed.csv"
+parser = argparse.ArgumentParser()
+parser.add_argument('--data_path', type=str, default='preprocessing/olshopdatapreprocesed/online_shoppers_intention_preprocessed.csv')
+args = parser.parse_args()
 
-# Load Dataset
-df = pd.read_csv(DATA_PATH)
-
+df = pd.read_csv(args.data_path)
 # Fitur dan target
 X = df.drop("Revenue", axis=1)
 print(X.columns.tolist())
