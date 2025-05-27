@@ -1,12 +1,14 @@
 # Inference.py
+import argparse
 import joblib
 import pandas as pd
 
 # Path absolut ke model
-model_path = r'Eksperimen_SML_Akas-Bagus-Setiawan2\Membangun_model\Membangun_model\model.pkl'
+parser = argparse.ArgumentParser()
+parser.add_argument('--model_path', type=str, default='Membangun_model/model.pkl')
+args = parser.parse_args()
 
-# Load model
-model = joblib.load(model_path)
+model = joblib.load(args.model_path)
 
 # Contoh input (harus cocok urutan & nama kolomnya)
 sample_input = pd.DataFrame([{
