@@ -10,12 +10,15 @@ import dagshub
 from pathlib import Path
 
 # Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent  # Masuk ke root project
+
+parser = argparse.ArgumentParser()
 parser.add_argument(
     '--data_path',
     type=str,
     default=str(BASE_DIR / 'preprocessing/olshopdatapreprocesed/preprocessed.csv')
 )
+args = parser.parse_args()
 
 df = pd.read_csv(args.data_path)
 # Fitur dan target
