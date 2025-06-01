@@ -21,15 +21,15 @@ parser.add_argument(
 args = parser.parse_args()
 
 df = pd.read_csv(args.data_path)
-# Fitur dan target
+
+#Revenuefix
+df["Revenue"] = df["Revenue"].astype(int)
+
 X = df.drop("Revenue", axis=1)
-print(X.columns.tolist())
 y = df["Revenue"]
 
-# Split data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Model
 model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 
