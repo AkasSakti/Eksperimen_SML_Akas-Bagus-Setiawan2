@@ -9,6 +9,7 @@ import mlflow
 import dagshub
 
 # Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
+BASE_DIR = Path(__file__).resolve().parent
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_path', type=str, default=str(BASE_DIR / 'Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/preprocessed.csv'))
 args = parser.parse_args()
