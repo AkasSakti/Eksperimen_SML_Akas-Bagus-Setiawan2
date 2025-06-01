@@ -28,16 +28,19 @@ def load_and_preprocess(path):
             df[col] = pd.to_numeric(df[col], errors='coerce')
     df.dropna(subset=numerical_features, inplace=True)
 
-    # 5. Scaling (StandardScaler)
-    scaler = StandardScaler()
-    df[numerical_features] = scaler.fit_transform(df[numerical_features])
-
-    # 6. Deteksi & Penanganan Outlier (z-score)
-    z_scores = np.abs(stats.zscore(df[numerical_features]))
-    if z_scores.shape[1] == len(numerical_features):
-        df = df[(z_scores < 3).all(axis=1)]
+    if len(numerical_features) == 0:
+        print("[WARNING] Tidak ada kolom numerik ditemukan setelah konversi.")
     else:
-        print("[WARNING] Dimensi z_scores tidak sesuai, outlier tidak dideteksi.")
+        # 5. Scaling (StandardScaler)
+        scaler = StandardScaler()
+        df[numerical_features] = scaler.fit_transform(df[numerical_features])
+
+        # 6. Deteksi & Penanganan Outlier (z-score)
+        z_scores = np.abs(stats.zscore(df[numerical_features]))
+        if z_scores.shape[1] == len(numerical_features):
+            df = df[(z_scores < 3).all(axis=1)]
+        else:
+            print("[WARNING] Dimensi z_scores tidak sesuai, outlier tidak dideteksi.")
 
     # 7. Encoding Data Kategorikal
     categorical_features = df.select_dtypes(include=['object', 'string']).columns
@@ -65,13 +68,26 @@ def load_and_preprocess(path):
     else:
         print("[WARNING] Kolom 'Administrative_Duration' tidak ditemukan.")
 
+    # 9. Pastikan kolom Revenue bertipe int (0/1)
+    if 'Revenue' in df.columns:
+        if df['Revenue'].dtype != 'int' and df['Revenue'].dtype != 'bool':
+            # Jika nilai 0.0 / 1.0, ubah ke int
+            if set(df['Revenue'].unique()) <= {0.0, 1.0}:
+                df['Revenue'] = df['Revenue'].astype(int)
+            else:
+                df['Revenue'] = (df['Revenue'] > 0.5).astype(int)
+
     print("[INFO] Preprocessing complete.")
     return df
 
-if __name__ == "__main__":
-    os.makedirs("Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/", exist_ok=True)
 
-    output_path = "Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/preprocessed.csv"
-    df_ready = load_and_preprocess("Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/online_shoppers_intention_preprocessed.csv")
+if __name__ == "__main__":
+    output_dir = "D:/nang jember/Akas Bagus Setiawan/DICODING/Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/"
+    os.makedirs(output_dir, exist_ok=True)
+
+    input_path = "D:/nang jember/Akas Bagus Setiawan/DICODING/Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/online_shoppers_intention_preprocessed.csv"
+    output_path = os.path.join(output_dir, "preprocessed.csv")
+
+    df_ready = load_and_preprocess(input_path)
     df_ready.to_csv(output_path, index=False)
     print(f"[INFO] Preprocessed file saved to: {output_path}")
