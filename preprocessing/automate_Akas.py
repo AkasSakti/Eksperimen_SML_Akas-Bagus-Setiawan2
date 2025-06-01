@@ -82,10 +82,10 @@ def load_and_preprocess(path):
 
 
 if __name__ == "__main__":
-    output_dir = "D:/nang jember/Akas Bagus Setiawan/DICODING/Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/"
+    output_dir = "Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/"
     os.makedirs(output_dir, exist_ok=True)
 
-    input_path = "D:/nang jember/Akas Bagus Setiawan/DICODING/Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/online_shoppers_intention_preprocessed.csv"
+    input_path = "Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/online_shoppers_intention_preprocessed.csv"
     output_path = os.path.join(output_dir, "preprocessed.csv")
 
     df_ready = load_and_preprocess(input_path)
