@@ -7,6 +7,7 @@ import joblib
 import os
 import mlflow
 import dagshub
+from pathlib import Path
 
 # Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
 BASE_DIR = Path(__file__).resolve().parent
