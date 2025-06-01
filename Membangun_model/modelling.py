@@ -10,7 +10,7 @@ import dagshub
 
 # Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_path', type=str, default='Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/preprocessed.csv')
+parser.add_argument('--data_path', type=str, default=str(BASE_DIR / 'Eksperimen_SML_Akas-Bagus-Setiawan2/preprocessing/olshopdatapreprocesed/preprocessed.csv'))
 args = parser.parse_args()
 
 df = pd.read_csv(args.data_path)
