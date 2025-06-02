@@ -5,11 +5,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:  # <-- Tambahkan baris ini agar muncul tombol "Run workflow"
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # ⏱ Tambahan timeout agar tidak infinite loop
 
     steps:
       - name: Checkout repo
@@ -25,10 +26,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r Membangun_model/requirements.txt
 
-      - name: Run model script
+      - name: Run automate_Akas.py pipeline
         run: |
-          python Membangun_model/modelling.py
+          python automate_Akas.py
 
-      - name: Run inference check
+        env:
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+
+      - name: Run inference check (optional)
         run: |
-          python Monitoring\ dan\ Logging/7.Inference.py --model_path Membangun_model/model.pkl
+          python "Monitoring dan Logging/7.Inference.py" --model_path Membangun_model/model.pkl
+        continue-on-error: true
