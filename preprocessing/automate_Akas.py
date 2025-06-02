@@ -9,7 +9,9 @@ from sklearn.metrics import classification_report, accuracy_score
 from scipy import stats
 import joblib
 import mlflow
-from dagshub import dagshub_logger  # tanpa import login
+
+from dagshub.auth import login
+from dagshub.logging import DAGsHubLogger
 
 # ========== CONFIG ==========
 REPO_NAME = "Eksperimen_SML_Akas-Bagus-Setiawan2"
@@ -26,34 +28,43 @@ MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI")
 if not MLFLOW_USER or not MLFLOW_TOKEN or not MLFLOW_URI:
     raise EnvironmentError("❌ Env MLFLOW_TRACKING_USERNAME, PASSWORD, dan URI wajib diset di GitHub Secrets!")
 
-# ========== INIT MLflow & DagsHub ==========
+# ========== LOGIN ==========
 try:
-    # Tidak perlu login(), cukup set URI dan init logger
+    login(username=MLFLOW_USER, token=MLFLOW_TOKEN)
     mlflow.set_tracking_uri(MLFLOW_URI)
-    dagshub_logger.init(repo_owner="AkasSakti", repo_name=REPO_NAME, mlflow=True)
+
+    dagshub_logger = DAGsHubLogger(
+        repo_name=REPO_NAME,
+        repo_owner="AkasSakti",
+        experiment_name="CI-Online-Shopper",
+        log_hparams=True,
+        log_metrics=True
+    )
+    dagshub_logger.set_mlflow()
     mlflow.set_experiment("CI-Online-Shopper")
-    print("✅ MLflow dan DagsHub init berhasil.")
+
+    print("✅ Login dan MLflow init berhasil.")
 except Exception as e:
-    raise RuntimeError(f"❌ Gagal init MLflow/DagsHub: {e}")
+    raise RuntimeError(f"❌ Gagal login atau init MLflow/DagsHub: {e}")
 
 # ========== PREPROCESS ==========
 def load_and_preprocess(path):
-    print(f"[INFO] Loading dataset dari: {path}")
+    print(f"[INFO] Loading dataset from: {path}")
 
     if not os.path.exists(path):
         raise FileNotFoundError(f"❌ Dataset tidak ditemukan: {path}")
 
     df = pd.read_csv(path)
-    print("[INFO] Dataset loaded.")
+    print("[INFO] Dataset loaded successfully.")
 
-    # Imputasi dengan modus (most_frequent)
+    # Imputasi
     imputer = SimpleImputer(strategy='most_frequent')
     df = pd.DataFrame(imputer.fit_transform(df), columns=df.columns)
 
     df.drop_duplicates(inplace=True)
     df = df.convert_dtypes()
 
-    # Skala fitur numerik
+    # Skala numerik
     numerical_features = df.select_dtypes(include=['number']).columns
     for col in numerical_features:
         if df[col].dtype not in ['float64', 'int64']:
@@ -66,16 +77,16 @@ def load_and_preprocess(path):
         z_scores = np.abs(stats.zscore(df[numerical_features]))
         df = df[(z_scores < 3).all(axis=1)]
 
-    # Encode fitur kategori
+    # Encode kategori
     categorical_features = df.select_dtypes(include=['object', 'string']).columns
     for col in categorical_features:
         le = LabelEncoder()
         try:
             df[col] = le.fit_transform(df[col].astype(str))
         except Exception as e:
-            print(f"[WARNING] Encoding gagal di kolom {col}: {e}")
+            print(f"[WARNING] Encoding gagal pada kolom {col}: {e}")
 
-    # Optional binning (contoh kolom 'Administrative_Duration')
+    # Optional binning
     if 'Administrative_Duration' in df.columns and not df['Administrative_Duration'].isnull().all():
         try:
             df['Administrative_Duration_Bin'] = pd.qcut(
@@ -87,15 +98,15 @@ def load_and_preprocess(path):
         except Exception as e:
             print(f"[WARNING] Binning error: {e}")
 
-    # Normalisasi target Revenue
+    # Target normalisasi
     if 'Revenue' in df.columns:
-        if df['Revenue'].dtype not in ['int64', 'bool']:
+        if df['Revenue'].dtype != 'int' and df['Revenue'].dtype != 'bool':
             if set(df['Revenue'].unique()) <= {0.0, 1.0}:
                 df['Revenue'] = df['Revenue'].astype(int)
             else:
                 df['Revenue'] = (df['Revenue'] > 0.5).astype(int)
 
-    print("[INFO] Preprocessing selesai.")
+    print("[INFO] Preprocessing complete.")
     return df
 
 # ========== MAIN ==========
@@ -104,7 +115,7 @@ if __name__ == "__main__":
 
     df_ready = load_and_preprocess(DATA_PATH)
     df_ready.to_csv(PROCESSED_PATH, index=False)
-    print(f"✅ File preprocessing disimpan di: {PROCESSED_PATH}")
+    print(f"✅ Preprocessed file saved to: {PROCESSED_PATH}")
 
     # ========== MODELLING & LOGGING ==========
     X = df_ready.drop(columns=["Revenue"])
@@ -122,20 +133,20 @@ if __name__ == "__main__":
             report = classification_report(y_test, y_pred)
             print(report)
 
-            # Logging ke MLflow
+            # Logging MLflow
             mlflow.log_param("model_type", "RandomForest")
             mlflow.log_param("n_estimators", 100)
             mlflow.log_param("random_state", 42)
             mlflow.log_metric("accuracy", acc)
 
-            # Simpan model
+            # Save model
             os.makedirs(os.path.dirname(MODEL_OUTPUT), exist_ok=True)
             joblib.dump(model, MODEL_OUTPUT)
-            print(f"✅ Model disimpan di {MODEL_OUTPUT}")
+            print(f"✅ Model disimpan sebagai {MODEL_OUTPUT}")
 
             if os.path.exists(MODEL_OUTPUT):
                 mlflow.log_artifact(MODEL_OUTPUT)
             else:
-                print("[WARNING] File model tidak ditemukan saat log_artifact.")
+                print(f"[WARNING] File model tidak ditemukan saat log_artifact.")
     except Exception as e:
         print(f"❌ Error saat modelling atau logging MLflow: {e}")
