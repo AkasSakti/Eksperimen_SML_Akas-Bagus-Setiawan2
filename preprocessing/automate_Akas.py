@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.impute import SimpleImputer
 from scipy import stats
 
-
+#load
 def load_and_preprocess(path):
     print(f"[INFO] Loading dataset from: {path}")
     df = pd.read_csv(path)
