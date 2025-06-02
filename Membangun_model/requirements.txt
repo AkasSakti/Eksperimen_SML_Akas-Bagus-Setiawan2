@@ -4,4 +4,4 @@ joblib
 prometheus_client
 flask
 mlflow
-dagshub
+dagshub>=0.3.10
