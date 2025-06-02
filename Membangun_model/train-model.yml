@@ -27,6 +27,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r Membangun_model/requirements.txt
+          pip install --upgrade dagshub>=0.3.10  # ✅ Wajib untuk auth.login
 
       - name: 🚀 Run training script
         run: |
