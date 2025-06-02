@@ -10,8 +10,6 @@ from scipy import stats
 import joblib
 import mlflow
 
-from dagshub.logging import DAGsHubLogger
-
 # ========== CONFIG ==========
 REPO_NAME = "Eksperimen_SML_Akas-Bagus-Setiawan2"
 MODEL_OUTPUT = "Membangun_model/model.pkl"
@@ -32,27 +30,19 @@ try:
     mlflow.set_tracking_uri(MLFLOW_URI)
     mlflow.set_experiment("CI-Online-Shopper")
 
-    dagshub_logger = DAGsHubLogger(
-        repo_name=REPO_NAME,
-        repo_owner="AkasSakti",
-        experiment_name="CI-Online-Shopper",
-        log_hparams=True,
-        log_metrics=True
-    )
-    dagshub_logger.set_mlflow()
-    print("✅ MLflow dan DagsHub logger siap.")
+    print("✅ MLflow siap tanpa DagsHub logger.")
 except Exception as e:
-    raise RuntimeError(f"❌ Gagal init MLflow/DagsHub: {e}")
+    raise RuntimeError(f"❌ Gagal init MLflow: {e}")
 
 # ========== PREPROCESS ==========
 def load_and_preprocess(path):
-    print(f"[INFO] Loading dataset from: {path}")
+    print(f"[INFO] Loading dataset dari: {path}")
 
     if not os.path.exists(path):
         raise FileNotFoundError(f"❌ Dataset tidak ditemukan: {path}")
 
     df = pd.read_csv(path)
-    print("[INFO] Dataset loaded successfully.")
+    print("[INFO] Dataset berhasil dimuat.")
 
     # Imputasi
     imputer = SimpleImputer(strategy='most_frequent')
@@ -79,7 +69,7 @@ def load_and_preprocess(path):
         try:
             df[col] = le.fit_transform(df[col].astype(str))
         except Exception as e:
-            print(f"[WARNING] Encoding gagal pada kolom {col}: {e}")
+            print(f"[WARNING] Encoding gagal di kolom {col}: {e}")
 
     if 'Administrative_Duration' in df.columns and not df['Administrative_Duration'].isnull().all():
         try:
@@ -99,7 +89,7 @@ def load_and_preprocess(path):
             else:
                 df['Revenue'] = (df['Revenue'] > 0.5).astype(int)
 
-    print("[INFO] Preprocessing complete.")
+    print("[INFO] Preprocessing selesai.")
     return df
 
 # ========== MAIN ==========
@@ -108,7 +98,7 @@ if __name__ == "__main__":
 
     df_ready = load_and_preprocess(DATA_PATH)
     df_ready.to_csv(PROCESSED_PATH, index=False)
-    print(f"✅ Preprocessed file saved to: {PROCESSED_PATH}")
+    print(f"✅ File preprocessed disimpan di: {PROCESSED_PATH}")
 
     # ========== MODELLING & LOGGING ==========
     X = df_ready.drop(columns=["Revenue"])
