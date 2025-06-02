@@ -9,7 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score
 from scipy import stats
 import joblib
 import mlflow
-from dagshub import dagshub_logger, login
+from dagshub import dagshub_logger
 
 # ========== CONFIG ==========
 REPO_NAME = "Eksperimen_SML_Akas-Bagus-Setiawan2"
