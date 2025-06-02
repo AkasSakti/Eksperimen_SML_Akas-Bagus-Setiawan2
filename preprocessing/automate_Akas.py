@@ -10,7 +10,6 @@ from scipy import stats
 import joblib
 import mlflow
 
-from dagshub.auth import login
 from dagshub.logging import DAGsHubLogger
 
 # ========== CONFIG ==========
@@ -28,10 +27,10 @@ MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI")
 if not MLFLOW_USER or not MLFLOW_TOKEN or not MLFLOW_URI:
     raise EnvironmentError("❌ Env MLFLOW_TRACKING_USERNAME, PASSWORD, dan URI wajib diset di GitHub Secrets!")
 
-# ========== LOGIN ==========
+# ========== MLflow Init ==========
 try:
-    login(username=MLFLOW_USER, token=MLFLOW_TOKEN)
     mlflow.set_tracking_uri(MLFLOW_URI)
+    mlflow.set_experiment("CI-Online-Shopper")
 
     dagshub_logger = DAGsHubLogger(
         repo_name=REPO_NAME,
@@ -41,11 +40,9 @@ try:
         log_metrics=True
     )
     dagshub_logger.set_mlflow()
-    mlflow.set_experiment("CI-Online-Shopper")
-
-    print("✅ Login dan MLflow init berhasil.")
+    print("✅ MLflow dan DagsHub logger siap.")
 except Exception as e:
-    raise RuntimeError(f"❌ Gagal login atau init MLflow/DagsHub: {e}")
+    raise RuntimeError(f"❌ Gagal init MLflow/DagsHub: {e}")
 
 # ========== PREPROCESS ==========
 def load_and_preprocess(path):
@@ -64,7 +61,6 @@ def load_and_preprocess(path):
     df.drop_duplicates(inplace=True)
     df = df.convert_dtypes()
 
-    # Skala numerik
     numerical_features = df.select_dtypes(include=['number']).columns
     for col in numerical_features:
         if df[col].dtype not in ['float64', 'int64']:
@@ -77,7 +73,6 @@ def load_and_preprocess(path):
         z_scores = np.abs(stats.zscore(df[numerical_features]))
         df = df[(z_scores < 3).all(axis=1)]
 
-    # Encode kategori
     categorical_features = df.select_dtypes(include=['object', 'string']).columns
     for col in categorical_features:
         le = LabelEncoder()
@@ -86,7 +81,6 @@ def load_and_preprocess(path):
         except Exception as e:
             print(f"[WARNING] Encoding gagal pada kolom {col}: {e}")
 
-    # Optional binning
     if 'Administrative_Duration' in df.columns and not df['Administrative_Duration'].isnull().all():
         try:
             df['Administrative_Duration_Bin'] = pd.qcut(
@@ -98,7 +92,6 @@ def load_and_preprocess(path):
         except Exception as e:
             print(f"[WARNING] Binning error: {e}")
 
-    # Target normalisasi
     if 'Revenue' in df.columns:
         if df['Revenue'].dtype != 'int' and df['Revenue'].dtype != 'bool':
             if set(df['Revenue'].unique()) <= {0.0, 1.0}:
@@ -133,13 +126,12 @@ if __name__ == "__main__":
             report = classification_report(y_test, y_pred)
             print(report)
 
-            # Logging MLflow
+            # Logging
             mlflow.log_param("model_type", "RandomForest")
             mlflow.log_param("n_estimators", 100)
             mlflow.log_param("random_state", 42)
             mlflow.log_metric("accuracy", acc)
 
-            # Save model
             os.makedirs(os.path.dirname(MODEL_OUTPUT), exist_ok=True)
             joblib.dump(model, MODEL_OUTPUT)
             print(f"✅ Model disimpan sebagai {MODEL_OUTPUT}")
@@ -149,4 +141,4 @@ if __name__ == "__main__":
             else:
                 print(f"[WARNING] File model tidak ditemukan saat log_artifact.")
     except Exception as e:
-        print(f"❌ Error saat modelling atau logging MLflow: {e}")
+        print(f"❌ Error saat modelling/logging: {e}")
