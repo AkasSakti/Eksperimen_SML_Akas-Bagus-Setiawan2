@@ -25,6 +25,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r Membangun_model/requirements.txt
+          pip install --upgrade dagshub
 
       - name: Run automate_Akas.py pipeline
         run: |
