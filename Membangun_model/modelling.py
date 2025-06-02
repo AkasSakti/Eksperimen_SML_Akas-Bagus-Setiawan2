@@ -7,11 +7,9 @@ import joblib
 import os
 import mlflow
 import dagshub
-from dagshub.auth import login
 from pathlib import Path
 
-# Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
-BASE_DIR = Path(__file__).resolve().parent.parent  # Masuk ke root project
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -22,8 +20,6 @@ parser.add_argument(
 args = parser.parse_args()
 
 df = pd.read_csv(args.data_path)
-
-#Revenuefix
 df["Revenue"] = df["Revenue"].astype(int)
 
 X = df.drop("Revenue", axis=1)
@@ -34,28 +30,27 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 
-# Evaluasi
 y_pred = model.predict(X_test)
 print(classification_report(y_test, y_pred))
 
-# Simpan model ke file pkl
 MODEL_DIR = "Membangun_model"
 os.makedirs(MODEL_DIR, exist_ok=True)
 joblib.dump(model, os.path.join(MODEL_DIR, "model.pkl"))
 print(f"Model disimpan sebagai {os.path.join(MODEL_DIR, 'model.pkl')}")
 
-# 1. Set tracking URI dulu
+# Tracking ke DagsHub
 mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
-login(username=os.getenv("DAGSHUB_USER"), token=os.getenv("DAGSHUB_TOKEN"))
-# 2. Inisialisasi koneksi DagsHub (autentikasi & pengikatan MLflow)
-dagshub.init(repo_owner='AkasSakti', repo_name='Eksperimen_SML_Akas-Bagus-Setiawan2', mlflow=True)
 
-# 3. Set nama eksperimen
+dagshub.init(
+    repo_owner='AkasSakti',
+    repo_name='Eksperimen_SML_Akas-Bagus-Setiawan2',
+    mlflow=True
+)
+
 mlflow.set_experiment("CI-Online-Shopper")
 
-# 4. Jalankan logging dalam run
 with mlflow.start_run():
     mlflow.log_param("model", "RandomForest")
     mlflow.log_metric("acc", 0.9)
     mlflow.log_artifact("Membangun_model/model.pkl")
-    mlflow.autolog()  # Opsional: bisa ditaruh sebelum atau dalam run
+    mlflow.autolog()
