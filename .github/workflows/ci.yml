@@ -28,7 +28,7 @@ jobs:
 
       - name: Run automate_Akas.py pipeline
         run: |
-          python automate_Akas.py
+          python preprocessing/automate_Akas.py
 
         env:
           MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
