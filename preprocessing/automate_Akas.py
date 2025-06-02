@@ -13,8 +13,8 @@ import mlflow
 # ========== CONFIG ==========
 REPO_NAME = "Eksperimen_SML_Akas-Bagus-Setiawan2"
 MODEL_OUTPUT = "Membangun_model/model.pkl"
-DATA_PATH = f"{REPO_NAME}/preprocessing/online_shoppers_intention_preprocessed.csv"
-PROCESSED_PATH = f"{REPO_NAME}/preprocessing/olshopdatapreprocesed/preprocessed.csv"
+DATA_PATH = "preprocessing/online_shoppers_intention_preprocessed.csv"
+PROCESSED_PATH = "preprocessing/olshopdatapreprocesed/preprocessed.csv"
 PROCESSED_DIR = os.path.dirname(PROCESSED_PATH)
 
 # ========== ENV CHECK ==========
