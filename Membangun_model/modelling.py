@@ -7,6 +7,7 @@ import joblib
 import os
 import mlflow
 import dagshub
+from dagshub.auth import login
 from pathlib import Path
 
 # Path dataset (ganti sesuai lokasi lokal kamu, atau gunakan path relatif)
@@ -45,7 +46,7 @@ print(f"Model disimpan sebagai {os.path.join(MODEL_DIR, 'model.pkl')}")
 
 # 1. Set tracking URI dulu
 mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
-
+login(username=os.getenv("DAGSHUB_USER"), token=os.getenv("DAGSHUB_TOKEN"))
 # 2. Inisialisasi koneksi DagsHub (autentikasi & pengikatan MLflow)
 dagshub.init(repo_owner='AkasSakti', repo_name='Eksperimen_SML_Akas-Bagus-Setiawan2', mlflow=True)
 
