@@ -7,7 +7,6 @@ import joblib
 import os
 import mlflow
 import mlflow.sklearn
-import dagshub
 from pathlib import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -36,35 +35,26 @@ y = df["Revenue"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# === Setup MLflow & DagsHub ===
-print(os.environ.get("MLFLOW_TRACKING_TOKEN"))
-# Pastikan environment variable MLFLOW_TRACKING_TOKEN sudah di-set dengan DagsHub PAT (Personal Access Token)
-mlflow_tracking_uri = "https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow"
-mlflow.set_tracking_uri(mlflow_tracking_uri)
-
-dagshub.init(
-    repo_owner='AkasSakti',
-    repo_name='Eksperimen_SML_Akas-Bagus-Setiawan2',
-    mlflow=True
-)
-
+# === Setup MLflow ===
+mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
 mlflow.set_experiment("CI-Online-Shopper")
 
+# === Start MLflow Run ===
 with mlflow.start_run():
     # Train model
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
-    # Log model sklearn ke MLflow
+    # Log model ke MLflow
     mlflow.sklearn.log_model(model, "model")
 
-    # Simpan model secara lokal
+    # Simpan model ke lokal dan log sebagai artefak
     model_path = MODEL_DIR / "model.pkl"
     joblib.dump(model, model_path)
     mlflow.log_artifact(str(model_path))
 
-    # Buat confusion matrix dan simpan sebagai PNG
+    # Confusion matrix
     cm = confusion_matrix(y_test, y_pred)
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
@@ -76,26 +66,25 @@ with mlflow.start_run():
     plt.close()
     mlflow.log_artifact(str(conf_matrix_path))
 
-    # Simpan classification report dalam format JSON
+    # Classification report as JSON
     report_dict = classification_report(y_test, y_pred, output_dict=True)
     metrics_path = MODEL_DIR / "metric_info.json"
     with open(metrics_path, "w") as f:
         json.dump(report_dict, f, indent=4)
     mlflow.log_artifact(str(metrics_path))
 
-    # Simpan classification report dalam HTML untuk estimator summary
+    # Classification report as HTML
     html_path = MODEL_DIR / "estimator.html"
     with open(html_path, "w") as f:
         f.write(f"<html><body><h1>Model Summary</h1><pre>{classification_report(y_test, y_pred)}</pre></body></html>")
     mlflow.log_artifact(str(html_path))
 
-    # Buat requirements.txt manual dan log sebagai artefak
+    # Requirements
     req_path = MODEL_DIR / "requirements.txt"
     with open(req_path, "w") as f:
         f.write("\n".join([
             "scikit-learn",
             "mlflow",
-            "dagshub",
             "matplotlib",
             "seaborn",
             "pandas",
