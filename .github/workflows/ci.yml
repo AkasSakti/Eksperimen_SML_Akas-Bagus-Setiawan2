@@ -1,49 +1,32 @@
-name: CI for ML Project
+name: Train Model and Log to DagsHub
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    paths:
+      - 'Membangun_model/**'
   workflow_dispatch:
 
 jobs:
-  build:
+  train:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+    - name: Setup Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r Membangun_model/requirements.txt
-          pip install dagshub==0.3.15
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r Membangun_model/requirements.txt
 
-      - name: Run modelling.py (training + log ke MLflow)
-        run: |
-          python Membangun_model/modelling.py
-        env:
-          MLFLOW_TRACKING_URI: https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow
-          MLFLOW_TRACKING_TOKEN: ${{ secrets.MLFLOW_TRACKING_TOKEN }}
-          DAGSHUB_ACCESS_TOKEN: ${{ secrets.MLFLOW_TRACKING_TOKEN }}
-
-      - name: Run automate_Akas.py pipeline
-        run: |
-          python preprocessing/automate_Akas.py
-        env:
-          MLFLOW_TRACKING_URI: https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow
-          MLFLOW_TRACKING_TOKEN: ${{ secrets.MLFLOW_TRACKING_TOKEN }}
-          DAGSHUB_ACCESS_TOKEN: ${{ secrets.MLFLOW_TRACKING_TOKEN }}
-
-      - name: Run inference check (optional)
-        run: |
-          python "Monitoring dan Logging/7.Inference.py" --model_path Membangun_model/model.pkl
-        continue-on-error: true
+    - name: Run training script with MLflow authentication
+      env:
+        MLFLOW_TRACKING_URI: https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow
+        MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+        MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+      run: python Membangun_model/modelling.py
