@@ -37,10 +37,10 @@ y = df["Revenue"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # === Setup MLflow & DagsHub ===
-# Ganti MLflow tracking URI langsung ke DagsHub endpoint agar pasti connect
-mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
+# Pastikan environment variable MLFLOW_TRACKING_TOKEN sudah di-set dengan DagsHub PAT (Personal Access Token)
+mlflow_tracking_uri = "https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow"
+mlflow.set_tracking_uri(mlflow_tracking_uri)
 
-# Inisialisasi dagshub untuk logging MLflow terintegrasi
 dagshub.init(
     repo_owner='AkasSakti',
     repo_name='Eksperimen_SML_Akas-Bagus-Setiawan2',
@@ -49,7 +49,6 @@ dagshub.init(
 
 mlflow.set_experiment("CI-Online-Shopper")
 
-# === Mulai Eksperimen ===
 with mlflow.start_run():
     # Train model
     model = RandomForestClassifier(n_estimators=100, random_state=42)
