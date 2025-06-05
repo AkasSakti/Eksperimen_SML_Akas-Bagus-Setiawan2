@@ -10,11 +10,29 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 import plotly.graph_objects as go
 
-# Direktori lokal untuk simpan artefak
+# ================================
+# Setup MLflow Tracking untuk DagsHub
+# ================================
+
+# Ambil kredensial dari environment (GitHub Actions secret)
+os.environ['MLFLOW_TRACKING_USERNAME'] = os.getenv('MLFLOW_TRACKING_USERNAME', 'your_username_here')
+os.environ['MLFLOW_TRACKING_PASSWORD'] = os.getenv('MLFLOW_TRACKING_PASSWORD', 'your_token_here')
+
+# Set tracking URI ke DagsHub
+mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
+
+# Autolog harus dideklarasikan sebelum start_run
+mlflow.autolog()
+
+# ================================
+# Buat direktori lokal untuk artefak
+# ================================
 local_base_dir = os.path.join("Membangun_model", "artefak")
 os.makedirs(local_base_dir, exist_ok=True)
 
-# Load dataset
+# ================================
+# Load Dataset
+# ================================
 data_path = os.path.join("preprocessing", "online_shoppers_intention_preprocessed.csv")
 df = pd.read_csv(data_path)
 X = df.drop(columns=["Revenue"])
@@ -22,18 +40,16 @@ y = df["Revenue"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Set mlflow tracking URI ke DagsHub
-mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
-
-# Aktifkan autolog mlflow SEBELUM start_run
-mlflow.autolog()
-
+# ================================
+# Mulai Eksperimen MLflow
+# ================================
 with mlflow.start_run():
+    # Train model
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
-    # Confusion matrix
+    # Confusion Matrix
     cm = confusion_matrix(y_test, y_pred)
     disp = ConfusionMatrixDisplay(cm)
     disp.plot()
@@ -42,22 +58,21 @@ with mlflow.start_run():
     plt.close()
     mlflow.log_artifact(cm_path)
 
-    # Classification report
+    # Classification Report (JSON)
     report = classification_report(y_test, y_pred, output_dict=True)
     report_path = os.path.join(local_base_dir, "metric_info.json")
     with open(report_path, "w") as f:
         json.dump(report, f, indent=4)
     mlflow.log_artifact(report_path)
 
-    # Save model.pkl dan log ke mlflow
+    # Save model (pkl)
     model_path = os.path.join(local_base_dir, "model.pkl")
     joblib.dump(model, model_path)
     mlflow.log_artifact(model_path)
 
-    # Feature importance plot (Plotly)
-    fi = model.feature_importances_
+    # Feature Importance Plot
     fig = go.Figure(go.Bar(
-        x=fi,
+        x=model.feature_importances_,
         y=X.columns,
         orientation='h'
     ))
