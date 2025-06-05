@@ -2,12 +2,14 @@ import argparse
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, ConfusionMatrixDisplay
 import joblib
 import os
 import mlflow
 import dagshub
 from pathlib import Path
+import matplotlib.pyplot as plt
+import json
 
 # === Setup Base Directory ===
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,12 +49,35 @@ with mlflow.start_run():
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
+    report = classification_report(y_test, y_pred, output_dict=True)
     print(classification_report(y_test, y_pred))
 
-    # Simpan model lokal (boleh untuk backup/keperluan manual)
+    # === Simpan model lokal (opsional/manual)
     MODEL_DIR = "Membangun_model"
     os.makedirs(MODEL_DIR, exist_ok=True)
-    joblib.dump(model, os.path.join(MODEL_DIR, "model.pkl"))
-    print(f"✅ Model disimpan sebagai {os.path.join(MODEL_DIR, 'model.pkl')}")
+    model_path = os.path.join(MODEL_DIR, "model.pkl")
+    joblib.dump(model, model_path)
+    print(f"✅ Model disimpan sebagai {model_path}")
 
-    # Tidak perlu mlflow.log_param, log_metric, atau log_artifact
+    # === Log confusion matrix
+    disp = ConfusionMatrixDisplay.from_estimator(model, X_test, y_test)
+    plt.title("Confusion Matrix")
+    cm_path = os.path.join(MODEL_DIR, "confusion_matrix.png")
+    plt.savefig(cm_path)
+    plt.close()
+    mlflow.log_artifact(cm_path)
+
+    # === Simpan metric_info.json
+    metrics_path = os.path.join(MODEL_DIR, "metric_info.json")
+    with open(metrics_path, "w") as f:
+        json.dump(report, f, indent=4)
+    mlflow.log_artifact(metrics_path)
+
+    # === Simpan estimator.html (opsional ringkasan HTML)
+    html_path = os.path.join(MODEL_DIR, "estimator.html")
+    with open(html_path, "w") as f:
+        f.write(f"<html><body><h1>Random Forest Summary</h1><pre>{classification_report(y_test, y_pred)}</pre></body></html>")
+    mlflow.log_artifact(html_path)
+
+    # === Log manual model.pkl (meskipun autolog sudah menangani)
+    mlflow.log_artifact(model_path)
