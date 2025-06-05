@@ -3,7 +3,8 @@ name: Train Model and Log to DagsHub
 on:
   push:
     paths:
-      - 'Membangun_model/**'   # Trigger kalau ada perubahan di folder Membangun_model
+      - 'Membangun_model/**'
+      - 'preprocessing/**'
   workflow_dispatch:
 
 jobs:
@@ -11,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
+    - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: Setup Python 3.10
@@ -24,14 +25,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r Membangun_model/requirements.txt
 
-    - name: Run training script with MLflow authentication
+    - name: Run training script and log to DagsHub
       env:
         MLFLOW_TRACKING_URI: https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow
         MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
         MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
-      run: python Membangun_model/modelling.py
+      run: |
+        python Membangun_model/modelling.py
 
-    - name: Upload training artifacts (optional)
+    - name: Upload training artifacts
       uses: actions/upload-artifact@v4
       with:
         name: training-artifacts
