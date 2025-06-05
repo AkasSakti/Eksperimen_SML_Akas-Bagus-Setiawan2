@@ -37,7 +37,8 @@ y = df["Revenue"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # === Inisialisasi MLflow dan DagsHub ===
-mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
+#mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 dagshub.init(
     repo_owner='AkasSakti',
     repo_name='Eksperimen_SML_Akas-Bagus-Setiawan2',
