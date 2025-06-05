@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repo
@@ -33,6 +33,7 @@ jobs:
         env:
           MLFLOW_TRACKING_URI: https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow
           MLFLOW_TRACKING_TOKEN: ${{ secrets.MLFLOW_TRACKING_TOKEN }}
+          DAGSHUB_ACCESS_TOKEN: ${{ secrets.MLFLOW_TRACKING_TOKEN }}
 
       - name: Run automate_Akas.py pipeline
         run: |
@@ -40,6 +41,7 @@ jobs:
         env:
           MLFLOW_TRACKING_URI: https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow
           MLFLOW_TRACKING_TOKEN: ${{ secrets.MLFLOW_TRACKING_TOKEN }}
+          DAGSHUB_ACCESS_TOKEN: ${{ secrets.MLFLOW_TRACKING_TOKEN }}
 
       - name: Run inference check (optional)
         run: |
