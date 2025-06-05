@@ -10,8 +10,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 import plotly.graph_objects as go
 
-# Atur direktori artefak lokal (untuk reviewer dan backup)
-local_base_dir = os.path.join(os.getcwd(), "Membangun_model")
+# Direktori lokal untuk simpan artefak (sesuai request)
+local_base_dir = os.path.join(os.getcwd(), "Membangun_model", "Membangun_model")
 os.makedirs(local_base_dir, exist_ok=True)
 
 # Load dataset
@@ -22,8 +22,8 @@ y = df["Revenue"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Set mlflow tracking URI ke DagsHub (ganti dengan repo DagsHub kamu)
-mlflow.set_tracking_uri("https://dagshub.com/USERNAME/REPO_NAME.mlflow")
+# Set mlflow tracking URI ke DagsHub kamu
+mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
 
 # Aktifkan autolog mlflow SEBELUM start_run
 mlflow.autolog()
