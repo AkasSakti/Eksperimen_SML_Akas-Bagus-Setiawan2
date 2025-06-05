@@ -6,13 +6,17 @@ from sklearn.metrics import classification_report, confusion_matrix, ConfusionMa
 import joblib
 import os
 import mlflow
+import mlflow.sklearn
 import dagshub
 from pathlib import Path
 import matplotlib.pyplot as plt
+import seaborn as sns
 import json
 
 # === Setup Base Directory ===
 BASE_DIR = Path(__file__).resolve().parent.parent
+MODEL_DIR = BASE_DIR / "Membangun_model"
+os.makedirs(MODEL_DIR, exist_ok=True)
 
 # === Argument Parsing ===
 parser = argparse.ArgumentParser()
@@ -32,7 +36,7 @@ y = df["Revenue"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# === Inisialisasi MLflow Autologging (panggil sebelum start_run) ===
+# === Inisialisasi MLflow dan DagsHub ===
 mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
 dagshub.init(
     repo_owner='AkasSakti',
@@ -41,73 +45,49 @@ dagshub.init(
 )
 mlflow.set_experiment("CI-Online-Shopper")
 
-mlflow.autolog()  # <= Penting! Ditaruh sebelum start_run
-
-# === Training dan Tracking ===
+# === Mulai eksperimen ===
 with mlflow.start_run():
+    # Train model
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
-
     y_pred = model.predict(X_test)
-    report = classification_report(y_test, y_pred, output_dict=True)
-    print(classification_report(y_test, y_pred))
 
-    # === Simpan model lokal (opsional/manual)
-    MODEL_DIR = "Membangun_model"
-    os.makedirs(MODEL_DIR, exist_ok=True)
-    model_path = os.path.join(MODEL_DIR, "model.pkl")
-    joblib.dump(model, model_path)
-    print(f"✅ Model disimpan sebagai {model_path}")
+    # === Log model secara eksplisit ===
+    mlflow.sklearn.log_model(model, "model")
 
-    # === Log confusion matrix
-    disp = ConfusionMatrixDisplay.from_estimator(model, X_test, y_test)
+    # === Simpan model secara manual (opsional)
+    joblib.dump(model, MODEL_DIR / "model.pkl")
+    mlflow.log_artifact(str(MODEL_DIR / "model.pkl"))
+
+    # === Log confusion matrix PNG ===
+    cm = confusion_matrix(y_test, y_pred)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
     plt.title("Confusion Matrix")
-    cm_path = os.path.join(MODEL_DIR, "confusion_matrix.png")
-    plt.savefig(cm_path)
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    conf_matrix_path = MODEL_DIR / "confusion_matrix.png"
+    plt.savefig(conf_matrix_path)
     plt.close()
-    mlflow.log_artifact(cm_path)
+    mlflow.log_artifact(str(conf_matrix_path))
 
-    # === Simpan metric_info.json
-    metrics_path = os.path.join(MODEL_DIR, "metric_info.json")
+    # === Log metric info JSON ===
+    report_dict = classification_report(y_test, y_pred, output_dict=True)
+    metrics_path = MODEL_DIR / "metric_info.json"
     with open(metrics_path, "w") as f:
-        json.dump(report, f, indent=4)
-    mlflow.log_artifact(metrics_path)
+        json.dump(report_dict, f, indent=4)
+    mlflow.log_artifact(str(metrics_path))
 
-    # === Simpan estimator.html (opsional ringkasan HTML)
-    html_path = os.path.join(MODEL_DIR, "estimator.html")
+    # === Log HTML estimator summary ===
+    html_path = MODEL_DIR / "estimator.html"
     with open(html_path, "w") as f:
-        f.write(f"<html><body><h1>Random Forest Summary</h1><pre>{classification_report(y_test, y_pred)}</pre></body></html>")
-    mlflow.log_artifact(html_path)
+        f.write(f"<html><body><h1>Model Summary</h1><pre>{classification_report(y_test, y_pred)}</pre></body></html>")
+    mlflow.log_artifact(str(html_path))
 
-    # === Log manual model.pkl (meskipun autolog sudah menangani)
-    mlflow.log_artifact(model_path)
+    # === Log manual requirements.txt ===
+    req_path = MODEL_DIR / "requirements.txt"
+    with open(req_path, "w") as f:
+        f.write("scikit-learn\nmlflow\ndagshub\nmatplotlib\nseaborn\npandas\njoblib\n")
+    mlflow.log_artifact(str(req_path))
 
-# === 1. Save confusion matrix as PNG ===
-cm = confusion_matrix(y_test, y_pred)
-plt.figure(figsize=(8, 6))
-sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
-plt.title("Confusion Matrix")
-plt.xlabel("Predicted")
-plt.ylabel("Actual")
-conf_matrix_path = os.path.join(MODEL_DIR, "confusion_matrix.png")
-plt.savefig(conf_matrix_path)
-mlflow.log_artifact(conf_matrix_path)
-
-# === 2. Save metrics as JSON ===
-metrics = classification_report(y_test, y_pred, output_dict=True)
-metrics_path = os.path.join(MODEL_DIR, "metric_info.json")
-with open(metrics_path, "w") as f:
-    json.dump(metrics, f, indent=4)
-mlflow.log_artifact(metrics_path)
-
-# === 3. Save HTML estimator summary (optional but useful) ===
-html_path = os.path.join(MODEL_DIR, "estimator.html")
-with open(html_path, "w") as f:
-    f.write(str(model))
-mlflow.log_artifact(html_path)
-
-# === 4. Log manual environment specs ===
-req_path = os.path.join(MODEL_DIR, "requirements.txt")
-with open(req_path, "w") as f:
-    f.write("scikit-learn\nmlflow\ndagshub\nmatplotlib\nseaborn\npandas\njoblib\n")
-mlflow.log_artifact(req_path)
+print("✅ Semua artefak berhasil disimpan dan dilog ke MLflow DagsHub.")
