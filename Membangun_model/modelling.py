@@ -10,19 +10,19 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 import plotly.graph_objects as go
 
-# Direktori lokal untuk simpan artefak (sesuai request)
-local_base_dir = os.path.join(os.getcwd(), "Membangun_model", "Membangun_model")
+# Direktori lokal untuk simpan artefak
+local_base_dir = os.path.join("Membangun_model", "artefak")
 os.makedirs(local_base_dir, exist_ok=True)
 
 # Load dataset
-data_path = os.path.join(os.getcwd(), "..", "preprocessing", "online_shoppers_intention_preprocessed.csv")
+data_path = os.path.join("preprocessing", "online_shoppers_intention_preprocessed.csv")
 df = pd.read_csv(data_path)
 X = df.drop(columns=["Revenue"])
 y = df["Revenue"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Set mlflow tracking URI ke DagsHub kamu
+# Set mlflow tracking URI ke DagsHub
 mlflow.set_tracking_uri("https://dagshub.com/AkasSakti/Eksperimen_SML_Akas-Bagus-Setiawan2.mlflow")
 
 # Aktifkan autolog mlflow SEBELUM start_run
@@ -49,12 +49,12 @@ with mlflow.start_run():
         json.dump(report, f, indent=4)
     mlflow.log_artifact(report_path)
 
-    # Save model.pkl lokal dan log ke mlflow
+    # Save model.pkl dan log ke mlflow
     model_path = os.path.join(local_base_dir, "model.pkl")
     joblib.dump(model, model_path)
     mlflow.log_artifact(model_path)
 
-    # Feature importance (interactive)
+    # Feature importance plot (Plotly)
     fi = model.feature_importances_
     fig = go.Figure(go.Bar(
         x=fi,
@@ -66,4 +66,4 @@ with mlflow.start_run():
     fig.write_html(estimator_html_path)
     mlflow.log_artifact(estimator_html_path)
 
-print("Run selesai dan artefak sudah di-log ke DagsHub serta disimpan lokal di:", local_base_dir)
+print("Run selesai. Artefak tersimpan di:", local_base_dir)
