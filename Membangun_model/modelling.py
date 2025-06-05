@@ -2,7 +2,7 @@ import argparse
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 import joblib
 import os
 import mlflow
@@ -81,3 +81,33 @@ with mlflow.start_run():
 
     # === Log manual model.pkl (meskipun autolog sudah menangani)
     mlflow.log_artifact(model_path)
+
+# === 1. Save confusion matrix as PNG ===
+cm = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+plt.title("Confusion Matrix")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+conf_matrix_path = os.path.join(MODEL_DIR, "confusion_matrix.png")
+plt.savefig(conf_matrix_path)
+mlflow.log_artifact(conf_matrix_path)
+
+# === 2. Save metrics as JSON ===
+metrics = classification_report(y_test, y_pred, output_dict=True)
+metrics_path = os.path.join(MODEL_DIR, "metric_info.json")
+with open(metrics_path, "w") as f:
+    json.dump(metrics, f, indent=4)
+mlflow.log_artifact(metrics_path)
+
+# === 3. Save HTML estimator summary (optional but useful) ===
+html_path = os.path.join(MODEL_DIR, "estimator.html")
+with open(html_path, "w") as f:
+    f.write(str(model))
+mlflow.log_artifact(html_path)
+
+# === 4. Log manual environment specs ===
+req_path = os.path.join(MODEL_DIR, "requirements.txt")
+with open(req_path, "w") as f:
+    f.write("scikit-learn\nmlflow\ndagshub\nmatplotlib\nseaborn\npandas\njoblib\n")
+mlflow.log_artifact(req_path)
